@@ -1,0 +1,62 @@
+doctype html
+head
+    title Geolocation
+    meta(charset='utf-8')
+    meta(name='viewport' content='width=device-width, initial-scale=1')
+    base(href='/')
+
+
+
+
+main
+    h1 web2 lab1
+    h2
+    body(onload='init(\'' + locations + '\');')
+        div(id="Map" style="height:500px; width:auto")
+        button(id="login") PRIJAVI SE
+
+
+script(src="https://openlayers.org/api/OpenLayers.js")
+script.
+    console.log(locations)
+
+    function init(locations){
+
+        function success(position){
+            const lat = position.coords.latitude;
+            const lon = position.coords.longitude;
+            const zoom = 18;
+
+            const lat2 = 40.748817;
+            const lon2 = -73.985428;
+
+            console.log(JSON.parse(locations))
+
+            var fromProjection = new OpenLayers.Projection("EPSG:4326");   // Transform from WGS 1984
+            var toProjection = new OpenLayers.Projection("EPSG:900913"); // to Spherical Mercator Projection
+            var position = new OpenLayers.LonLat(lon, lat).transform(fromProjection, toProjection);
+            var position2 = new OpenLayers.LonLat(lon2, lat2).transform(fromProjection, toProjection);
+
+            map = new OpenLayers.Map("Map");
+            var mapnik = new OpenLayers.Layer.OSM();
+            map.addLayer(mapnik);
+
+            var markers = new OpenLayers.Layer.Markers("Markers");
+            map.addLayer(markers);
+            markers.addMarker(new OpenLayers.Marker(position));
+            markers.addMarker(new OpenLayers.Marker(position2));
+
+            map.setCenter(position, zoom);
+        }
+
+        function error(){
+            alert("User has not allowed location!")
+        }
+
+        if(navigator.geolocation){
+            navigator.geolocation.getCurrentPosition(success, error);
+        }else{
+            alert("no location")
+        }
+
+    }
