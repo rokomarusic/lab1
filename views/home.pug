@@ -11,18 +11,19 @@ head
 main
     h1 web2 lab1
     h2
-    body(onload='init(\'' + locations + '\');')
+    body(onload='init(\'' + locations + '\', \'' + currentUser + '\');')
         div(id="Map" style="height:500px; width:auto")
         button(id="login") PRIJAVI SE
+        button(id="logout") ODJAVI SE
 
 
 script(src="https://openlayers.org/api/OpenLayers.js")
 script.
-    console.log(locations)
 
-    function init(locations){
 
-        function success(position){
+    function init(locations, currentUserJSON) {
+
+        function success(position) {
             const lat = position.coords.latitude;
             const lon = position.coords.longitude;
             const zoom = 18;
@@ -30,7 +31,25 @@ script.
             const lat2 = 40.748817;
             const lon2 = -73.985428;
 
-            console.log(JSON.parse(locations))
+            let currentUser = currentUserJSON === "undefined" ? undefined : JSON.parse(currentUserJSON)
+
+            if (currentUser !== undefined) {
+                console.log(currentUser)
+                let params = {
+                    method: 'POST',
+                    headers: {
+                        "Content-type": "application/json; charset=UTF-8"
+                    },
+                    body: JSON.stringify({lat, lon})
+                }
+                console.log(params)
+                const res = fetch('/location', params);
+
+                res.then(response => {
+                    console.log(response.json())
+                })
+            }
+
 
             var fromProjection = new OpenLayers.Projection("EPSG:4326");   // Transform from WGS 1984
             var toProjection = new OpenLayers.Projection("EPSG:900913"); // to Spherical Mercator Projection
@@ -49,13 +68,13 @@ script.
             map.setCenter(position, zoom);
         }
 
-        function error(){
+        function error() {
             alert("User has not allowed location!")
         }
 
-        if(navigator.geolocation){
+        if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(success, error);
-        }else{
+        } else {
             alert("no location")
         }
 
