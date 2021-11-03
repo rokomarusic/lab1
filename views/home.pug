@@ -13,8 +13,13 @@ main
     h2
     body(onload='init(\'' + locations + '\', \'' + currentUser + '\');')
         div(id="Map" style="height:500px; width:auto")
-        button(id="login") PRIJAVI SE
-        button(id="logout") ODJAVI SE
+        if currentUser !== undefined
+            form(action="/logout", method="get")
+                input(type="submit", value="Odjava")
+        else
+            button
+                a(href='/login', title='Prijava') Prijava
+
 
 
 script(src="https://openlayers.org/api/OpenLayers.js")
@@ -40,7 +45,7 @@ script.
                     headers: {
                         "Content-type": "application/json; charset=UTF-8"
                     },
-                    body: JSON.stringify({lat, lon})
+                    body: JSON.stringify({lat: lat, lon: lon, email: currentUser.email, time: new Date().toISOString()})
                 }
                 console.log(params)
                 const res = fetch('/location', params);

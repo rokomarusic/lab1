@@ -7,19 +7,17 @@ var fs = require('fs');
 const dotenv = require('dotenv');
 dotenv.config();
 
-let last5 = []
 const homeRouter = require('./routes/home.routes')
-
 
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'pug');
-
 
 app.use(express.static(path.join(__dirname, '/public/')));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
 const { auth, requiresAuth } = require('express-openid-connect');
+
 const port = 3000;
 
 const config = {
@@ -52,14 +50,6 @@ app.use('/', homeRouter);
     console.log(last5)
     res.send(req.oidc.isAuthenticated() ? 'Logged in' : 'Logged out');
 });*/
-
-app.get('/profile', requiresAuth(), (req, res) => {
-    res.send(JSON.stringify(req.oidc.user));
-});
-
-app.get('/lastfive', requiresAuth(), (req, res) => {
-    res.send(JSON.stringify(last5))
-})
 
 https.createServer({
     key: fs.readFileSync('server.key'),
