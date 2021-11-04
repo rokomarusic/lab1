@@ -8,10 +8,7 @@ router.get('/', (req, res) => {
     console.log(req.oidc.isAuthenticated())
 
     res.render('home', {
-        locations: JSON.stringify([{lat: 40.748817, lon: -73.985428}, {
-            lat: 40.748817,
-            lon: -73.985428
-        }]),
+        last5: JSON.stringify(last5),
         currentUser: req.oidc.isAuthenticated() ? JSON.stringify(req.oidc.user) : undefined
     })
 

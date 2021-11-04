@@ -10,56 +10,48 @@ head
 
 main
     h1 web2 lab1
-    h2
-    body(onload='init(\'' + locations + '\', \'' + currentUser + '\');')
-        div(id="Map" style="height:500px; width:auto")
+    body(onload='init(\'' + last5 + '\', \'' + currentUser + '\');')
         if currentUser !== undefined
             form(action="/logout", method="get")
                 input(type="submit", value="Odjava")
         else
             button
                 a(href='/login', title='Prijava') Prijava
+        h2(id="email")
+        h2(id="latlon")
+        h2 Podaci kliknutog korisnika:
+        p(id="email_c")
+        p(id="latlon_c")
+        p(id="time_c")
+        div(id="Map" style="height:500px; width:auto")
+
+
 
 
 
 script(src="https://openlayers.org/api/OpenLayers.js")
 script.
 
+    const email = document.querySelector('#email');
+    const latlon = document.querySelector('#latlon');
 
-    function init(locations, currentUserJSON) {
+    const email_c = document.querySelector('#email_c');
+    const latlon_c = document.querySelector('#latlon_c');
+    const time_c = document.querySelector('#time_c');
+
+    function init(last5, currentUserJSON) {
 
         function success(position) {
             const lat = position.coords.latitude;
             const lon = position.coords.longitude;
             const zoom = 18;
 
-            const lat2 = 40.748817;
-            const lon2 = -73.985428;
 
             let currentUser = currentUserJSON === "undefined" ? undefined : JSON.parse(currentUserJSON)
-
-            if (currentUser !== undefined) {
-                console.log(currentUser)
-                let params = {
-                    method: 'POST',
-                    headers: {
-                        "Content-type": "application/json; charset=UTF-8"
-                    },
-                    body: JSON.stringify({lat: lat, lon: lon, email: currentUser.email, time: new Date().toISOString()})
-                }
-                console.log(params)
-                const res = fetch('/location', params);
-
-                res.then(response => {
-                    console.log(response.json())
-                })
-            }
-
 
             var fromProjection = new OpenLayers.Projection("EPSG:4326");   // Transform from WGS 1984
             var toProjection = new OpenLayers.Projection("EPSG:900913"); // to Spherical Mercator Projection
             var position = new OpenLayers.LonLat(lon, lat).transform(fromProjection, toProjection);
-            var position2 = new OpenLayers.LonLat(lon2, lat2).transform(fromProjection, toProjection);
 
             map = new OpenLayers.Map("Map");
             var mapnik = new OpenLayers.Layer.OSM();
@@ -67,10 +59,56 @@ script.
 
             var markers = new OpenLayers.Layer.Markers("Markers");
             map.addLayer(markers);
-            markers.addMarker(new OpenLayers.Marker(position));
-            markers.addMarker(new OpenLayers.Marker(position2));
+            let marker = new OpenLayers.Marker(position)
+
+            markers.addMarker(marker);
 
             map.setCenter(position, zoom);
+
+            latlon.textContent = "LAT: " + lat + " LON: " + lon
+
+            if (currentUser !== undefined) {
+                console.log(currentUser)
+
+                email.textContent = currentUser.email;
+
+                let currentUserData = {lat: lat, lon: lon, email: currentUser.email, time: new Date().toISOString()}
+
+                marker.events.register("click", marker, function (e, i) {
+                    email_c.textContent = currentUserData.email
+                    latlon_c.textContent = "LAT: " + currentUserData.lat + " LON: " + currentUserData.lon
+                    time_c.textContent = currentUserData.time
+                })
+
+
+                let params = {
+                    method: 'POST',
+                    headers: {
+                        "Content-type": "application/json; charset=UTF-8"
+                    },
+                    body: JSON.stringify(currentUserData)
+                }
+                console.log(params)
+                const res = fetch('/location', params);
+
+                res.then(response => {
+                    console.log(response.json())
+                })
+
+                let realLast5 = JSON.parse(last5)
+
+                for (const userData of realLast5) {
+                    let p = new OpenLayers.LonLat(userData.lon, userData.lat).transform(fromProjection, toProjection);
+                    let m = new OpenLayers.Marker(p)
+                    m.events.register("click", m, function (e, i) {
+                        email_c.textContent = userData.email
+                        latlon_c.textContent = "LAT: " + userData.lat + " LON: " + userData.lon
+                        time_c.textContent = userData.time
+                    })
+                    markers.addMarker(m)
+                }
+
+            }
         }
 
         function error() {
