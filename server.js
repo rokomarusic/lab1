@@ -24,7 +24,7 @@ const config = {
     authRequired: false,
     idpLogout: true,
     secret: process.env.SECRET,
-    baseURL: process.env.APPURL || process.env.BASEURL,
+    baseURL: process.env.APP_URL || process.env.BASEURL,
     clientID: process.env.CLIENT_ID,
     issuerBaseURL: process.env.ISSUERBASEURL,
     clientSecret: process.env.CLIENT_SECRET,
